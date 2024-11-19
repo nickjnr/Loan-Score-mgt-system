@@ -1,0 +1,201 @@
+import { Logout } from "@mui/icons-material";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Sidebar from "../../../sidebar/Sidebar";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const AddBorrower = ({ setAuth }) => {
+  const [inputs, setInputs] = useState({
+    firstname: "",
+    lastname: "",
+    contactNumber: "",
+    address: "",
+    email: "",
+    username: "",
+  });
+
+  const onChange = (e) => {
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
+  };
+
+  const { firstname, lastname, contactNumber, address, email, username } =
+    inputs;
+
+  const addSuccessful = () => {
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 1000);
+      }),
+      {
+        pending: "Adding Borrower...",
+        success: "Added Successfully!",
+        error: "Error!",
+      },
+      {
+        autoClose: 1000,
+      }
+    );
+  };
+
+  const navigate = useNavigate();
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const body = {
+        firstname,
+        lastname,
+        contactNumber,
+        address,
+        email,
+        username,
+      };
+
+      const response = await fetch("http://localhost:8000/addClient", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token"),
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error while adding borrower");
+      }
+
+      const parseRes = await response.json();
+
+      addSuccessful();
+
+      // Redirect to borrowers page after a short delay
+      setTimeout(() => {
+        navigate("/borrowers"); // Adjust to the appropriate path
+      }, 3000);
+    } catch (error) {
+      console.log(error.message);
+      toast.error("Failed to add borrower: " + error.message);
+    }
+  };
+
+  return (
+    <div className="flex h-[900px]">
+      <Sidebar />
+      <div className="w-full h-[900px] border bg-white shadow-md rounded">
+        <div className="w-full px-8 pt-6 pb-8 mb-4 bg-white rounded">
+          {/* HEADER */}
+          <div className="flex items-center justify-between px-4 py-5 sm:px-6 bg-red-500 rounded shadow-md">
+            {/* TITLE */}
+            <div>
+              <h3 className="text-lg font-medium leading-6 text-white">
+                Add New Borrower
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-white">
+                Register all the required fields.
+              </p>
+            </div>
+            <ToastContainer />
+
+            {/* BUTTON */}
+            <div className="text-white">
+              <button onClick={() => setAuth(false)}>
+                <Link to="/login">
+                  <Logout />
+                </Link>
+              </button>
+            </div>
+          </div>
+
+          <form
+            onSubmit={onSubmit}
+            className="mt-5 p-8 rounded border shadow-md border-t-4 border-t-red-500"
+          >
+            {/* FIRST NAME */}
+            <label htmlFor="firstname">First Name: </label>
+            <input
+              type="text"
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="firstname"
+              value={firstname}
+              onChange={onChange}
+              placeholder="First Name"
+              required
+            />
+            {/* LAST NAME */}
+            <label htmlFor="lastname">Last Name: </label>
+            <input
+              type="text"
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="lastname"
+              value={lastname}
+              onChange={onChange}
+              placeholder="Last Name"
+              required
+            />
+            {/* CONTACT NUMBER */}
+            <label htmlFor="contactNumber">Contact Number: </label>
+            <input
+              type="text" // Changed to text for better input handling
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="contactNumber"
+              value={contactNumber}
+              onChange={onChange}
+              placeholder="Contact Number"
+              required
+            />
+            {/* ADDRESS */}
+            <label htmlFor="address">Address: </label>
+            <input
+              type="text"
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="address"
+              value={address}
+              onChange={onChange}
+              placeholder="Address"
+              required
+            />
+            {/* EMAIL ADDRESS */}
+            <label htmlFor="email">Email Address: </label>
+            <input
+              type="email"
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="email"
+              value={email}
+              onChange={onChange}
+              placeholder="Email"
+              required
+            />
+            {/* USERNAME */}
+            <label htmlFor="username">Username: </label>
+            <input
+              type="text"
+              className="block border border-grey-500 w-full p-3 rounded mb-4"
+              name="username"
+              value={username}
+              onChange={onChange}
+              placeholder="Username"
+              required
+            />
+
+            {/* BUTTONS */}
+            <button
+              type="submit"
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/6"
+            >
+              Save
+            </button>
+
+            <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/6 ml-10">
+              <Link to="/borrowers">Cancel</Link>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AddBorrower;
